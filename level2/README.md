@@ -31,7 +31,9 @@ We are gonna ignore some part for now, but there are three interesent parts of t
 - The if statement that checks if the address folowing the buffer starts by 0xb, if it's the case, it prints the address and exit.
 - the strdup function that, we know, uses malloc so uses space on the heap and not on the stack this time. It simply make a copy of the buffer on the heap.
 
-Where we will go into more details later for each components, let's make a quick reminded of how the call stack works.
+Where we will go into more details later for each components, let's make a quick reminded of how the memory works.
+![Memory organization](https://github.com/kbarbry/RainFall/blob/main/other/1_oLatmtP-JHDF8SSpoX2Nxg.gif)
+
 
 # Important doc
 
