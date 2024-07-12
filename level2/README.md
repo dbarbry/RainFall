@@ -57,9 +57,9 @@ As we can see the code is in the text part, and it calls the stack for functions
 While values might change on different architecture, and even not be that correct because of vitual memory (that I defenitely don't understand anything yet), the important here is to see that the stack starts at 0xbfffe000 address. We now understand why level2 checks for 0xb... addresses, because simple overlow would call the stack at the buffer address to execute a shellcode or other malicious code.Or here the buffer we are gonna pass through gets function is going straight to the stack, therefore in the range of 0xb... addresses. This if statement is some sort of anti buffer-overflow method (and seems effective for the stack part as far as I know).
 
 We can also check this using "info registers" command on gdb. Registers is a list of variables contained in the processor itself, for very fast access and changes of values. This is where we find the different variables we see everywhere when searching on buffer overflow:
-- EIP - (Instruction Pointer) Stores the next instruction address, so is incremented after each line of code.
+- EIP - (Instruction Pointer) Stores the next instruction address (or the current one depends on the architecture used), so is incremented after each line of code.
 - ESP - (Stack Pointer) Stores the current stack pointer and changes after each iteration ongoing in the stack. It is the top of the stack at all time.
-- EBP - (Base Pointer) Stores the last calling function return address.
+- EBP - (Base Pointer) Stores the last calling function return address (called SFP/Saved Frame Pointer). We can also say that it is the address of the top stack frame. Each function called create a new stack frame.
 *In here the E at the beggining of each register variable stands for Extended, name for 32bit, would be R for Register on 64bit or was absent on 16bit.*
 
 In order to be sort of exhaustive, we also have EDI and ESI for string operations, and others like EDX, ECX, EBX or EAX that are really not useful here.
@@ -77,10 +77,11 @@ MOV     DWORD [EBP-0Ch], 1 ;z
 ```
 
 This is what it does line by line:
-- Push EBP on the stack (old EBP is now stored at the top of the stack, ESP is incremented to the top of the stack too).
+- Push EBP on the stack (old EBP is now stored at the top of the stack, ESP is incremented to the top of the stack too), this is the Saved Frame Pointer (SFP).
 - Set EBP at ESP, so now EBP = ESP = top of the stack both.
 - Allocate memory on the stack for entry variable (parameters), 0Ch is ofc a size that has is variable depending on the number of entry arguments, here 3, moving ESP down a few address (incrementing the top of the stack, remember stack goes from higher to lower addresses).
 - For those three next line it really depends on the function called, here we have 3 parameters in the function called so we move their value respectively in EBP-4, EBP-8 and EBP-0Ch, we take EBP cause ESP is always changing for the top of the stack, where EBP stays at its last set state, during line 3 operation, so it is still equal to the old EBP address in the stack. We substract addresses cause again, the stack goes from higher to lower addresses, so substracting 4 is going closer to the top of the stack.
+*It is not shown here but I also saw before saving EBP address on the first line to also push EIP address, so the stack saves both EIP and EBP old state*
 
 ## Important doc
 
@@ -94,4 +95,6 @@ This is what it does line by line:
 
 [Call stack ESP explained](https://www.youtube.com/watch?v=RU5vUIl1vRs)
 
-[ASM Prologue understanding](https://www.youtube.com/watch?v=nbZJOT1gKX4 )
+[ASM Prologue understanding](https://www.youtube.com/watch?v=nbZJOT1gKX4)
+
+[Overflow deep explaination](http://theamazingking.com/tut1.php) !NOT HTTPS
