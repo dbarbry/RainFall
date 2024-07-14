@@ -83,6 +83,48 @@ This is what it does line by line:
 - For those three next line it really depends on the function called, here we have 3 parameters in the function called so we move their value respectively in EBP-4, EBP-8 and EBP-0Ch, we take EBP cause ESP is always changing for the top of the stack, where EBP stays at its last set state, during line 3 operation, so it is still equal to the old EBP address in the stack. We substract addresses cause again, the stack goes from higher to lower addresses, so substracting 4 is going closer to the top of the stack.
 *It is not shown here but I also saw before saving EBP address on the first line to also push EIP address, so the stack saves both EIP and EBP old state*
 
+### Resolution of level2
+
+If we pay attention to how we solved level1, we can see that we overflowed the buffer by filling it with 76 chars then the return address. Or here if we test that with an address starting with 0xb..., the expected result would be the program to print the address and then exit. Or when doing so the program just run normally, then crash with a segfault error.
+
+Thanks to the explanations above, we can understand why.
+
+Which didn't seem to be the case in level1, level2 seems to have a SFP (Saved Frame Pointer), which we know takes 4 bytes (size of a regular address in 32bit architecture) and then the return address. We then have in bytes:
+
+```
+|          buffer(76)          |   SFP (4)   | Ret_addr (4) |
+```
+
+Indeed if we now try to inject 4 more bytes before the address this is what we get:
+
+```bash
+level2@RainFall:~$ echo $(python -c "print('\x90'*76+'\x90'*4+'\x44\x84\x04\xb8')") > /tmp/payload
+level2@RainFall:~$ cat /tmp/payload -| ./level2 
+(0xb8048444)
+...
+```
+
+Where we could be happy to see that, it actually is a bad thing. In order to solve level2 with a basic buffer overflow, the idea is to inject after the NOP (\x90) a shellcode, then change the return address to beginning of the buffer, so the shellcode is executed and we get a shell as level3. This attack is a return-to-stack attack.
+*A shellcode is a piece of code that launch a shell and is generally used for buffer overflow exploits, the shorter the better, so it can fits in very small buffer.*
+
+Problem here, the stack starts at the address 0xbfffe000 and as we explained it earlier, the if statement checking if an address starts with 0xb acts as an anti buffer overflow.
+
+We have to find something else.
+
+Buffer overflows are possible in every section of the memories with differents methods. Here the only other sections that the program seems to use and that could have a buffer overflow is the heap.
+
+Indeed the strdup() function as we can read on the man:
+
+```
+The strdup() function returns a pointer to a new string which is a duplicate of the string s. Memory for the new string is obtained with malloc(3), and can be freed with free(3).
+```
+
+malloc() use the heap section of memory which is located in a completely different area as the stack (at the beginning of the addresses) and is then not gonna be caught by the anti buffer overflow checking if the return address is 0xb.
+
+### What is the heap ? And malloc ?
+
+The heap is basically a big chunck of memory available in case we need to allocate more space for vairables in our code. We very often instantly talk about malloc and free when talking about the heap but those functions actually comes from the libc and uses mmap() and brk(). We are still gonna focus on malloc because most of the libc functions uses it and strdup is no exception. Also to be more precise we are gonna go deeper in the dlmalloc (dl coming from the name of the person who codes this version of malloc) which is the most comonly used.
+
 ## Important doc
 
 [Advanced exploit of buffer overflows](https://arxiv.org/pdf/cs/0405073)
@@ -98,3 +140,5 @@ This is what it does line by line:
 [ASM Prologue understanding](https://www.youtube.com/watch?v=nbZJOT1gKX4)
 
 [Overflow deep explaination](http://theamazingking.com/tut1.php) !NOT HTTPS
+
+[Shellcode DataBase](https://shell-storm.org/shellcode/index.html)
