@@ -16,8 +16,10 @@ void    p(void) {
         printf("(%p)\n", (void *)ret_addr);
         exit(1);
     }
+
     puts(buffer);
     strdup(buffer);
+
     return;
 }
 
