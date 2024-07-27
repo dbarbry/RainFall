@@ -28,6 +28,8 @@ So as we can see there are 2 major changes from level3:
 
 Also we can notice that we won't have a shell this time but just the password printed.
 
+### Find a solution
+
 First thing, let's find the address of m and analyze the stack.
 
 m address (using same methods as in level3) is 0x08049810.

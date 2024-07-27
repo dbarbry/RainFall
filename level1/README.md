@@ -22,7 +22,10 @@ Some commands for gdb launched with gdb ./level1:
 
 ```
 r                   => run the program (run works too)
-b main              => set a breakpoint when entering main (can also be an hexadecimal address to stop at a specific line)
+b main              => set a breakpoint when entering main
+b * 0xffffffff      => set a breakpoint to a precise address
+c                   => continue program (after a breakpoint)
+set {int}0x<address>:0x<value>  => change a value while the program runs.
 disas main          => disassemble a specific functions in order to obtains more infos such as addresses
 ni                  => next instruction to go 1 by 1, line by line through the code
 info registers      => show all values of registers variables
