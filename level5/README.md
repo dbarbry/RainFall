@@ -48,11 +48,11 @@ It is an external functions. However here we have a problem, the PIE we talked a
 
 The PLT comes into play right here. If we try to see where printf elements are stored in our binary, we can see that the PLT (which is a section of our binary) define a j_printf functions, with j standing for jump instructions (ASM instruction to jump to an address). This jump instruction is usually directed to < function_name >@GOT. Okay that's a lot but let's try to make it clear.
 
-The PLT is, as it stands for, a procedure. When an binary is executed, a lot of things happen before entering the main function. One of those things is to resolve libc functions and dynamic library calls. The PLT will call for every external function, another function called _dl_runtime_resolve(), part of the ld.so library. This library is a dynamic linker/loader. We are definitely not gonna explains in depth how this functions and library works (you can read the man if you're inrerested in that), what we need to know is that it will returns the address of the externam functions we are looking for. It will then store this address in... you guessed it, the Global Offset Table. This address will now be used for every call of this function through the program (exit is called 2 times for example but the PLT is only gonna be called once, then the address will be stored on the GOT, and every call for that function will now check on the GOT and not call the PLT anymore).
+The PLT is, as it stands for, a procedure. When an binary is executed, a lot of things happen before entering the main function. One of those things is to resolve libc functions and dynamic library calls. The PLT will call for every external function, another function called _dl_runtime_resolve(), part of the ld.so library. This library is a dynamic linker/loader. We are definitely not gonna explains in depth how this functions and library works (you can read the man if you're inrerested in that), what we need to know is that it will returns the address of the external functions we are looking for. It will then store this address in... you guessed it, the Global Offset Table. This address will now be used for every call of this function through the program (exit is called 2 times for example but the PLT is only gonna be called once, then the address will be stored on the GOT, and every call for that function will now check on the GOT and not call the PLT anymore).
 
 ### GOT Overwrite
 
-Why are we interested in this GOT now ? Well it is actually possible to ovewrite values from the GOT, which is exactly what we need. Since we can't overwrite the return address of n() because exit() is used, why not changing the address of exit() in the GOT for the o() function's address ? This is exactly what we are going to try to do.
+Why are we interested in this GOT now ? Well it is actually possible to overwrite values from the GOT, which is exactly what we need. Since we can't overwrite the return address of n() because exit() is used, why not changing the address of exit() in the GOT for the o() function's address ? This is exactly what we are going to try to do.
 
 We haven't talked about it yet but this program has a format string vulnerability. Very easy way to verify this:
 
@@ -88,7 +88,7 @@ End of assembler dump.
 0x8049838 <exit@got.plt>:	0x080483d6
 ```
 
-So by disassembling the address where the PLT points to, we find a new jump to the GOT this time, and we now know the address where exit function is stored in the GOT, 0x8049838. (The actuall address of exit is 0x080483d6, but we don't care about that since it will be overwritten by the address of o(), what we want is where this address is stored).
+So by disassembling the address where the PLT points to, we find a new jump to the GOT this time, and we now know the address where exit function is stored in the GOT, 0x8049838. (The actual address of exit is 0x080483d6, but we don't care about that since it will be overwritten by the address of o(), what we want is where this address is stored).
 
 A simple way to do that is to use gdb and changes the value during the execution to see if everything works as expected:
 
