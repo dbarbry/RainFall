@@ -28,7 +28,7 @@ int main(void) {
             service = (int)strdup(buffer + 7);
 
         if (!memcmp(buffer, "login", 5)) {
-            if (auth[8] == 0) // no check if auth is defined, some decompiler use *(auth + 32)
+            if (auth[32] == 0) // no check if auth is defined, some decompiler use *(auth + 32)
                 fwrite("Password:\n", 1, 10, stdout);
             else
                 system("/bin/sh");
