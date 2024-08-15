@@ -42,7 +42,7 @@ Where we will go into more details later for each components, let's make a quick
 
 ---
 
-![Memory organization](https://github.com/kbarbry/RainFall/blob/main/other/1_oLatmtP-JHDF8SSpoX2Nxg.gif)
+![Memory organization](https://github.com/kbarbry/RainFall/blob/main/level2/Resources/memory_layout.gif)
 
 As we can see the code is in the text part, and it calls the stack for functions, local variables etc... The stack is on the high address side of the memory (so closer to 0xffffffff addresses) and the code part (text) is on the low address part (so closer to 0x00000000 addresses). The heap is on this side too, so maloc() functions will allow memory on this area. In x86 32bit architecture on Linux, we can find the starting addresses for each sections:
 
