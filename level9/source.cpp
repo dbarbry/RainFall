@@ -8,7 +8,6 @@ class N {
         char    annotation[108];
         
     public:
-
         N(int nbr): value(nbr) {}
 
         int operator+ (N &n) {

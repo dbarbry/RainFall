@@ -1,4 +1,4 @@
-Execute the payload.sh file to print level7 password:
+Execute the payload.sh file to print level8's password:
 
 ```sh
 level7@RainFall:~$ /tmp/payload.sh 
