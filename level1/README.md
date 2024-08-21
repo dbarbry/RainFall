@@ -32,6 +32,8 @@ info registers      => show all values of registers variables
 x/100xb $esp        => show the 100 first spaces of the stack (esp), can be an address 0xb0000000-20 to read 20 chars before the address
 p main              => get the address of the main function
 info proc mappings  => show starting address for heap, stack...etc
+finish              => finish the current subfunction
+print $eax          => print the current eax value (ex. the last return value)
 ```
 
 After checking a little more the code on ghidra, we also found a function called run(), that is not used anywhere:
