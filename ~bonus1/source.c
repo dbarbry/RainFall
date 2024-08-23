@@ -6,13 +6,15 @@ int main(int ac, char **av) {
     int     size;
 
     size = atoi(av[1]);
-    if (size > 9)
+
+    if (size < 10) {
+        memcpy(dest, av[2], size * 4);
+        if (size == 1464814662)
+            execl("/bin/sh", "sh", 0); // path, args, env
+
+    } else {
         return 1;
-
-    memcpy(dest, av[2], size * 4);
-
-    if (size == 1464814662)
-        execl("/bin/sh", "sh", 0); // path, args, env
+    }
 
     return 0;
 }
