@@ -71,6 +71,8 @@ As we can see the buffer printed at the end is made of:
 
 The question marks are printed because the buffer is non null terminated and doesn't know where to stop reading the string, then segfault.
 
+### A solution ?
+
 So what happend is that the first buffer is set with 20 chars without a '\0' at the end. Since the space memory of buffer1 and buffer2 are next to each other, once buffer2 is set, if we read buffer1, we will read both buffer. So when the program use strcpy to place buffer1 into the main buffer, it actually prints 40 chars (plus a little garbage), then it add a space after, then finally it concatenates buffer2 with the actual states of main buffer. This is why we can see buffer2 appears 2 times. We also understand that an overflow is possible since we have control on 61 char over the 54 main buffer size. (the buffer size in our program is set from decompiler guesses, it could be different, the only thing we know is that there is an overflow).
 
 Now that we know that we can also make an analysis, the size of the buffer of 20 doesn't allow us to make use a shellcode since the shortest we found is 21 chars long. We tried to take the first 20 chars into buffer1 and add the last one into buffer 2 but nothing worked. And we know that we probably need a shellcode since nowhere in the script a shell is launched or the password of bonus1 is printed.
