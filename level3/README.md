@@ -45,7 +45,7 @@ AAAA %x %x %x %x %x %x %x
 AAAA 200 b7fd1ac0 b7ff37d0 41414141 20782520 25207825 78252078
 ```
 
-We can see here a buffer that we fill by "AAAA", then the buffer size in hexadecimal form, then 2 addresses in the stack (starts with b), then our buffer again but stored (41 = A), and some random numbers after that. Problem here, how to write something ? We can read but we need somehow to make this mysterious m equal to 64. A surprising thing happen when doing this:
+We can see here a buffer that we fill by "AAAA", then the buffer size in hexadecimal form, then 2 addresses in the stack (starts with b), then our buffer again but stored (41 = A), and some random numbers after that. Problem here, how to write something ? We can read but we need somehow to make this mysterious m equal to 64. We just tried to do this:
 
 ```sh
 level3@RainFall:~$ ./level3 
@@ -53,7 +53,7 @@ level3@RainFall:~$ ./level3
 Success
 ```
 
-Where m is supposed to be the month of the year in regular printf, here it prints Success. There is definitely something to do here but what?
+Wwe first thought it was related to the solution but actually %m prints the actual states of errno, since no errors happened, it prints success. Nothing to do with the exercices.
 
 ### Strange login output (digression)
 
